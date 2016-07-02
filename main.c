@@ -1,8 +1,12 @@
+#include<errno.h>
+#include<stdlib.h>
+#include<sys/epoll.h>
 #include<fcntl.h>
 #include<netdb.h>
 #include<sys/types.h>
 #include<stdio.h>
 #include<sys/socket.h>
+#define MAXEVENTS 64
 static int create_and_bind(char *port)
 {
 	struct addrinfo hints;
@@ -69,3 +73,130 @@ static int make_socket_non_blocking(int sfd)
 
 	return 0;
 }
+
+int main(int argc,char* argv[])
+{
+	int sfd, s;
+	int efd;
+
+	struct epoll_event event;
+	struct epoll_event *events;
+
+	if(argc !=2 )
+	{
+		fprintf(stderr,"Usage : % [port \n]",argv[0]);
+		exit(EXIT_FAILURE);
+	}
+	sfd = create_and_bind(argv[1]);
+	if(sfd == -1)
+		abort();
+	s = make_socket_non_blocking(sfd);
+	if(s == -1)
+		abort();
+
+	s = listen(sfd,SOMAXCONN);
+	if(s == -1)
+	{
+		perror("LIsten");
+		abort();
+	}
+
+	efd = epoll_create1(0);
+	if(efd == -1)
+	{
+		perror("epoll_create");
+		abort();
+	}
+
+	event.data.fd = sfd;
+	event.events = EPOLLIN | EPOLLET;
+	s = epoll_ctl(efd,EPOLL_CTL_ADD,sfd,&event);
+	
+	if(s == -1)
+	{
+		perror("epoll error");
+		abort();
+	}
+
+	events = calloc(MAXEVENTS,sizeof event);
+
+	while(1)
+	{
+		int n,i;
+		n = epoll_wait(efd,events,MAXEVENTS,-1);
+
+		for(i = 0;i<n;i++)
+		{
+			if((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
+			{
+				fprintf(stderr,"epoll error\n");
+				close(events[i].data.fd);
+				continue;
+			}
+			else if(sfd == events[i].data.fd)
+			{
+				while(1)
+				{
+					struct sockaddr in_addr;
+					socklen_t in_len;
+					int infd;
+					char hbuf[NI_MAXHOST],sbuf[NI_MAXSERV];
+					in_len = sizeof(in_addr);
+					infd = accept(sfd,&in_addr,&in_len);
+					if(infd == -1)
+					{
+						if((errno == EAGAIN) || (errno == EWOULDBLOCK))
+						{
+							break;
+						}
+						else
+						{
+							perror("accept");
+							break;
+						}
+					}
+
+					s = getnameinfo(&in_addr,in_len,hbuf,sizeof hbuf,sbuf,sizeof sbuf, NI_NUMERICHOST|NI_NUMERICSERV);
+
+					if(s == 0)
+					{
+						printf("Accepted connection on descriptor %d" "(host=%s,port=%s)\n",infd,hbuf,sbuf);
+					}
+
+					s = make_socket_non_blocking(infd);
+
+					if(s == -1)abort();
+
+					event.data.fd = infd;
+					event.events = EPOLLIN|EPOLLET;
+					s = epoll_ctl(efd,EPOLL_CTL_ADD,infd,&event);
+					if (s == -1)
+					{
+						perror("epoll ctl error");
+						abort();
+					}
+
+				}
+
+				continue;
+			}
+			else 
+			{ // fd 套接口有数据可读写
+				int done = 0;
+				while(1)
+				{
+					ssize_t count;
+					char buf[512];
+					break;
+				}
+			}
+		}
+	}
+
+	free(events);
+	close(sfd);
+
+	return EXIT_SUCCESS;
+
+}
+
