@@ -1,7 +1,9 @@
+#include<stdio.h>
 #include<errno.h>
 #include<stdlib.h>
 #include<sys/epoll.h>
 #include<fcntl.h>
+#include<unistd.h>
 #include<netdb.h>
 #include<sys/types.h>
 #include<stdio.h>
@@ -41,7 +43,7 @@ static int create_and_bind(char *port)
 		close(sfd);
 	}
 
-	if(rp != NULL)
+	if(rp == NULL)
 	{
 		fprintf(stderr,"Could not bind \n");
 		return -1;
@@ -73,6 +75,21 @@ static int make_socket_non_blocking(int sfd)
 
 	return 0;
 }
+int c = 0;
+static void  do_request(int fd)
+{
+	char buf[512];
+	char sbuf[512];
+	int count = read(fd,buf,sizeof(buf));
+	
+	write(1,buf,count);
+	write(fd,buf,count);
+	c += 1;
+	printf("c : %d\n",c);
+	close(fd);
+
+}
+
 
 int main(int argc,char* argv[])
 {
@@ -162,7 +179,9 @@ int main(int argc,char* argv[])
 					{
 						printf("Accepted connection on descriptor %d" "(host=%s,port=%s)\n",infd,hbuf,sbuf);
 					}
-
+				//	char buf[512];
+				//	int count = read(infd,buf);
+				//	write(stdout,buf,count);
 					s = make_socket_non_blocking(infd);
 
 					if(s == -1)abort();
@@ -185,8 +204,10 @@ int main(int argc,char* argv[])
 				int done = 0;
 				while(1)
 				{
+				//	printf("hello \n");
 					ssize_t count;
 					char buf[512];
+					do_request(events[i].data.fd);
 					break;
 				}
 			}
