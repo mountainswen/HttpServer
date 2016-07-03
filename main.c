@@ -1,3 +1,5 @@
+
+#include "request.h"
 #include<stdio.h>
 #include<errno.h>
 #include<stdlib.h>
@@ -6,7 +8,6 @@
 #include<unistd.h>
 #include<netdb.h>
 #include<sys/types.h>
-#include<stdio.h>
 #include<sys/socket.h>
 #define MAXEVENTS 64
 static int create_and_bind(char *port)
@@ -75,6 +76,7 @@ static int make_socket_non_blocking(int sfd)
 
 	return 0;
 }
+/*
 int c = 0;
 static void  do_request(int fd)
 {
@@ -88,7 +90,7 @@ static void  do_request(int fd)
 	printf("c : %d\n",c);
 	close(fd);
 
-}
+}*/
 
 
 int main(int argc,char* argv[])
