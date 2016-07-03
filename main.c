@@ -1,4 +1,4 @@
-
+#include<string.h>
 #include "request.h"
 #include<stdio.h>
 #include<errno.h>
@@ -103,7 +103,7 @@ int main(int argc,char* argv[])
 
 	if(argc !=2 )
 	{
-		fprintf(stderr,"Usage : % [port \n]",argv[0]);
+		fprintf(stderr,"Usage :  [port] \n");
 		exit(EXIT_FAILURE);
 	}
 	sfd = create_and_bind(argv[1]);
@@ -146,8 +146,9 @@ int main(int argc,char* argv[])
 
 		for(i = 0;i<n;i++)
 		{
-			if((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
+			if((events[i].events & EPOLLERR) /*|| (events[i].events & EPOLLHUP) *//*|| (!(events[i].events & EPOLLIN))*/)
 			{
+				printf("the socket is : %d",events[i].data.fd);
 				fprintf(stderr,"epoll error\n");
 				close(events[i].data.fd);
 				continue;
@@ -186,8 +187,11 @@ int main(int argc,char* argv[])
 				//	write(stdout,buf,count);
 					s = make_socket_non_blocking(infd);
 
-					if(s == -1)abort();
-
+					if(s == -1)
+					{
+						perror("make_socket_non_blocking \n");
+						abort();
+					}
 					event.data.fd = infd;
 					event.events = EPOLLIN|EPOLLET;
 					s = epoll_ctl(efd,EPOLL_CTL_ADD,infd,&event);
@@ -209,13 +213,16 @@ int main(int argc,char* argv[])
 				//	printf("hello \n");
 					ssize_t count;
 					char buf[512];
+					printf("\n the socket is : %d\n",events[i].data.fd);
 					do_request(events[i].data.fd);
+				//	close(events[i].data.fd);
 					break;
 				}
 			}
 		}
 	}
-
+	
+	printf("something wrong????\n");
 	free(events);
 	close(sfd);
 
