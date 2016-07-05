@@ -6,14 +6,19 @@
 #include<string.h>
 int parse_request_line(char*,int);
 int get_line(int,char*,int);
+int bad_request(int);
+
 void do_request(int client)
 {
 	char buf[1024];
 	int count = read(client,buf,sizeof buf);
 	if(count == 0){close(client);return ;}
-	printf("count :%d\n",count);
-	
-	printf("\n send to server ..\n");	
+	bad_request(client);
+}
+
+int bad_request(int client)
+{
+	char buf[1024];
 
 	int c =  sprintf(buf, "HTTP/1.0 400 BAD REQUEST\r\n");
 	send(client,buf,c,0);
@@ -26,7 +31,8 @@ void do_request(int client)
 	send(client, buf, c, 0);
 	c = sprintf(buf, "such as a POST without a Content-Length.\r\n");
 	send(client, buf, c, 0);
-
+	
+	return 1;
 }
 
 int parse_request_line(char *buf,int fd)
