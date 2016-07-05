@@ -9,7 +9,7 @@
 #include<netdb.h>
 #include<sys/types.h>
 #include<sys/socket.h>
-#define MAXEVENTS 64
+#define MAXEVENTS 65
 static int create_and_bind(char *port)
 {
 	struct addrinfo hints;
@@ -112,7 +112,8 @@ int main(int argc,char* argv[])
 	s = make_socket_non_blocking(sfd);
 	if(s == -1)
 		abort();
-
+	
+	printf("SOMAXCONN:%d\n",SOMAXCONN);
 	s = listen(sfd,SOMAXCONN);
 	if(s == -1)
 	{
@@ -143,14 +144,23 @@ int main(int argc,char* argv[])
 	{
 		int n,i;
 		n = epoll_wait(efd,events,MAXEVENTS,-1);
-
+		
 		for(i = 0;i<n;i++)
 		{
 			if((events[i].events & EPOLLERR) /*|| (events[i].events & EPOLLHUP) *//*|| (!(events[i].events & EPOLLIN))*/)
-			{
+			{//检测事件类型
+				printf("\ninto for loop...\n");
+				int error = 0;
+				socklen_t errlen = sizeof error;
+
+				if(getsockopt(events[i].data.fd,SOL_SOCKET,SO_ERROR,(void*)&error,&errlen) == 0)
+				{
+					printf("\n error = %s\n",strerror(error));
+				}
 				printf("the socket is : %d",events[i].data.fd);
 				fprintf(stderr,"epoll error\n");
 				close(events[i].data.fd);
+				printf("\n out for loop \n");
 				continue;
 			}
 			else if(sfd == events[i].data.fd)
@@ -210,16 +220,22 @@ int main(int argc,char* argv[])
 				int done = 0;
 				while(1)
 				{
+					printf("in while loop\n");
 				//	printf("hello \n");
 					ssize_t count;
 					char buf[512];
-					printf("\n the socket is : %d\n",events[i].data.fd);
+					//printf("\n the socket is : %d\n",events[i].data.fd);
+					printf("\n into do_request func\n");
 					do_request(events[i].data.fd);
+					printf("\n out do_request func\n");
 				//	close(events[i].data.fd);
+					printf("in while loop done:%d\n",done);
+					done ++;
 					break;
 				}
 			}
 		}
+		printf("are you there?\n");
 	}
 	
 	printf("something wrong????\n");
