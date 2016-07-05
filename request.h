@@ -1,6 +1,12 @@
-//#ifndef __REQUEST__
-//#define __REQUEST__
+#ifndef __REQUEST__
+#define __REQUEST__
 
 void do_request(int fd);
 
-//#endif
+struct wen_request{
+	int wen_fd;
+	int wen_method;
+	char* wen_url;
+};
+
+#endif
