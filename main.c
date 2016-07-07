@@ -217,12 +217,13 @@ int main(int argc,char* argv[])
 			}
 			else 
 			{ // fd 套接口有数据可读写
+				epoll_ctl(efd,EPOLL_CTL_DEL,events[i].data.fd,&event);
 				struct wen_request myrequest;
 				myrequest.wen_fd = events[i].data.fd;	
 				int done = 0;
 				printf("in while loop\n");
 				printf("\n into do_request func\n");
-				do_request(myrequest);
+				do_request(&myrequest);
 				printf("\n out do_request func\n");
 				printf("in while loop done:%d\n",done);
 			}
