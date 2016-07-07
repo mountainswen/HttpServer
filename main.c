@@ -217,22 +217,14 @@ int main(int argc,char* argv[])
 			}
 			else 
 			{ // fd 套接口有数据可读写
+				struct wen_request myrequest;
+				myrequest.wen_fd = events[i].data.fd;	
 				int done = 0;
-				while(1)
-				{
-					printf("in while loop\n");
-				//	printf("hello \n");
-					ssize_t count;
-					char buf[512];
-					//printf("\n the socket is : %d\n",events[i].data.fd);
-					printf("\n into do_request func\n");
-					do_request(events[i].data.fd);
-					printf("\n out do_request func\n");
-				//	close(events[i].data.fd);
-					printf("in while loop done:%d\n",done);
-					done ++;
-					break;
-				}
+				printf("in while loop\n");
+				printf("\n into do_request func\n");
+				do_request(myrequest);
+				printf("\n out do_request func\n");
+				printf("in while loop done:%d\n",done);
 			}
 		}
 		printf("are you there?\n");
