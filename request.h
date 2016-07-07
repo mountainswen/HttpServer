@@ -1,3 +1,6 @@
+#ifndef __REQUEST__
+#define __REQUEST__
+
 #define TRUE  1
 #define FALSE 0
 
@@ -19,3 +22,4 @@ struct wen_request{
 
 void do_request(struct wen_request*);
 
+#endif

@@ -1,4 +1,5 @@
 #include<sys/socket.h>
+#include "response.h"
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
@@ -39,6 +40,8 @@ void do_request(struct wen_request *request)
 		bad_request(request);
 		return ;
 	}
+
+	http_response(request);
 }
 
 int bad_request(struct wen_request *request)
@@ -67,7 +70,7 @@ int parse_request(struct wen_request *request)
 
 	if(!parse_request_line(request))return FALSE;
 	
-	printf(request->wen_url);	
+//	printf(request->wen_url);
 
 	return TRUE;
 }

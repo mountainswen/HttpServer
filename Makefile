@@ -3,5 +3,5 @@ CFLAGS=-Wall
 
 all:main
 
-main:main.c request.c
-	$(CC) $(CFLAGS) main.c request.c -o main	
+main:main.c request.c response.c
+	$(CC) $(CFLAGS) main.c request.c response.c -o main	
