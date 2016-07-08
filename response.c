@@ -1,3 +1,4 @@
+#include<fcntl.h>
 #include<string.h>
 #include"response.h"
 #include<stdlib.h>
@@ -22,17 +23,34 @@ int http_response(struct wen_request* request)
 
 static void parse_http_uri(char* url,char*fiename)
 {
-
+	if(strcmp(url,"/") == 0)
+		filename = "index.html";
+	else 
+		return ;
 }
 
 static void io_write(char* filename,int fd)
 {
+	http_header();
 
+	char path[100] = "html/";
+	strcat(path,filename);
+
+	int file = open(path,O_RDONLY);
+
+	char buf[1024];
+	int count = read(file,buf,sizeof buf);
+	
+	while(count != 0)
+	{
+		write(fd,buf,count);
+		count = read(file,buf,sizeof buf);
+	}
 }
 
 static void http_header(int fd)
 {
-
+	
 }
 
 
