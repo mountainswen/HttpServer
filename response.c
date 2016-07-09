@@ -25,7 +25,7 @@ int http_response(struct wen_request* request)
 static void parse_http_uri(char* url,char* filename)
 {
 	if(strcmp(url,"/") == 0)
-		filename = "index.html";
+		sprintf(filename,"index.html");
 	else 
 		return ;
 }
@@ -35,7 +35,8 @@ static void io_write(char* filename,int fd)
 	char path[100] = "html/";
 	strcat(path,filename);
 	char buf[1024];
-
+	printf(path);
+	printf("\n");
 	int file = open((char*)path,O_RDONLY);
 
 	if(file == -1)
