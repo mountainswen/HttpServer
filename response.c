@@ -18,6 +18,12 @@ int http_response(struct wen_request* request)
 	parse_http_uri(request->wen_url,filename);
 	
 	io_write(filename,request->wen_fd);
+	
+
+//	exit(1);
+
+//	wen_free(request);
+//	free(request);
 
 	return 1; 
 }
@@ -38,14 +44,15 @@ static void io_write(char* filename,int fd)
 	printf(path);
 	printf("\n");
 	int file = open((char*)path,O_RDONLY);
-
 	if(file == -1)
 	{
 		http_header(fd,-1);
 		int c = sprintf(buf,"cannot find this file in the server,please check again!\n");
-		write(fd,buf,c);
+		send(fd,buf,c,0);
+		printf("hello \n");
 		return ;
 	}
+//	printf("end of not find\n");
 	http_header(fd,1);
 	int count = read(file,buf,sizeof buf);
 	
@@ -54,6 +61,7 @@ static void io_write(char* filename,int fd)
 		write(fd,buf,count);
 		count = read(file,buf,sizeof buf);
 	}
+	write(fd,"\0",1);
 
 	close(file);
 }
@@ -67,8 +75,9 @@ static void http_header(int fd,int flag)
 	{
 		count = sprintf(buf,"HTTP/1.1 404 CANNOT FIND FILE\r\n");
 	}
+//	printf("in header\n");
 	send(fd,buf,count,0);
-
+//	printf("out of header\n");
 	count = sprintf(buf,"content-type: text/html\r\n");
 	send(fd,buf,count,0);
 

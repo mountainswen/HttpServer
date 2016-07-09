@@ -4,6 +4,7 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include "request.h" 
+#include<time.h>
 #include<string.h>
 int parse_request(struct wen_request*);
 int get_line(int,char*,int);
@@ -31,7 +32,11 @@ VERSION http_version(char*http)
 
 void wen_free(struct wen_request *request)
 {
+//	send(request->wen_fd);
+	sleep(1);
+	//如果send数据之后立即调用close可能会导致对端没有接收到完整的数据
 	close(request->wen_fd);
+	free(request);
 }
 
 void do_request(struct wen_request *request)
@@ -42,6 +47,8 @@ void do_request(struct wen_request *request)
 	}
 
 	http_response(request);
+
+	wen_free(request);
 }
 
 int bad_request(struct wen_request *request)

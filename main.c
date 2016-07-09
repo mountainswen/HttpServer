@@ -67,7 +67,12 @@ static int make_socket_non_blocking(int sfd)
 
 	flags |= O_NONBLOCK;
 	s = fcntl(sfd,F_SETFL,flags);
+	struct linger so_linger;
 
+//	so_linger.l_onoff = 1;
+//	so_linger.l_linger = 30;
+//
+	setsockopt(s,SOL_SOCKET,SO_LINGER,&so_linger,sizeof so_linger);
 	if(s == -1)
 	{
 		perror("fcntl");
@@ -218,12 +223,12 @@ int main(int argc,char* argv[])
 			else 
 			{ // fd 套接口有数据可读写
 				epoll_ctl(efd,EPOLL_CTL_DEL,events[i].data.fd,&event);
-				struct wen_request myrequest;
-				myrequest.wen_fd = events[i].data.fd;	
+				struct wen_request *myrequest = (struct wen_request*)malloc(sizeof(struct wen_request));
+				myrequest->wen_fd = events[i].data.fd;	
 				int done = 0;
 				printf("in while loop\n");
 				printf("\n into do_request func\n");
-				do_request(&myrequest);
+				do_request(myrequest);
 				printf("\n out do_request func\n");
 				printf("in while loop done:%d\n",done);
 			}
