@@ -7,6 +7,9 @@
 #define METHOD int
 #define VERSION int
 
+#define AGAIN 1
+#define OK 2
+
 #define POST 1
 #define GET  2
 

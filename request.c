@@ -9,7 +9,7 @@
 int parse_request(struct wen_request*);
 //int get_line(int,char*,int);
 int bad_request(struct wen_request*);
-int parse_request_line(struct wen_request*);
+int parse_http_request_line(struct wen_request*);
 void wen_free(struct wen_request*);
 METHOD http_method(char*);
 VERSION http_version(char*);
@@ -83,10 +83,41 @@ void init_request(struct wen_request* request,int fd)
 
 int parse_request(struct wen_request *request)
 {
-	
+	char *head = NULL;
+	for(;;)
+	{
+		head = request->BUF[request->pos_last % MAX_REQUEST];
+		remain_size = MIN(MAX_REQUEST - (request->pos_last - request->pos_first) - 1,MAX_REQUEST - request->last % MAX_REQUEST);
+		
+		int n = read(request->wen_fd,head,remain_size);
+
+		if(n == 0){
+			wen_free(request);
+			return 0;
+		}
+
+		else if(n < 0)
+		{
+			wen_free(request);
+			return 0;
+		}
+
+		request->pos_last += n;
+		
+		int res_line = parse_http_request_line(request);
+
+		if(res_line == AGAIN)
+		{
+			continue;
+		}
+		else if(res_line != OK)
+		{
+			wen_free(request);
+		}
+	}
 }	
 
-int parse_request_line(struct wen_request* request)
+int parse_http_request_line(struct wen_request* request)
 {
 	
 }
