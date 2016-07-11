@@ -80,6 +80,8 @@ static void http_header(int fd,int flag)
 //	printf("out of header\n");
 	count = sprintf(buf,"content-type: text/html\r\n");
 	send(fd,buf,count,0);
+	
+	count = sprintf(buf ,"hello world!\n");
 
 	count = sprintf(buf,"\r\n");
 	send(fd,buf,count,0);
