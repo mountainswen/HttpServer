@@ -1,3 +1,4 @@
+#include<sys/stat.h>
 #include<sys/socket.h>
 #include "response.h"
 #include<stdio.h>
@@ -48,9 +49,7 @@ void do_request(struct wen_request *request)
 		return ;
 	}
 
-	http_response(request);
-
-	wen_free(request);
+	//wen_free(request);
 }
 
 int bad_request(struct wen_request *request)
@@ -71,6 +70,7 @@ int bad_request(struct wen_request *request)
 	c = sprintf(buf, "such as a POST without a Content-Length.\r\n");
 	send(client, buf, c, 0);
 	
+	wen_free(request);
 	return 1;
 }
 
@@ -84,10 +84,13 @@ void init_request(struct wen_request* request,int fd)
 int parse_request(struct wen_request *request)
 {
 	char *head = NULL;
+	struct stat sbuf;
+	int remain_size;
 	for(;;)
 	{
 		head = request->BUF[request->pos_last % MAX_REQUEST];
-		remain_size = MIN(MAX_REQUEST - (request->pos_last - request->pos_first) - 1,MAX_REQUEST - request->last % MAX_REQUEST);
+		remain_size = MIN(MAX_REQUEST - (request->pos_last - request->pos_first) - 1,MAX_REQUEST\
+				- request->pos_last % MAX_REQUEST);
 		
 		int n = read(request->wen_fd,head,remain_size);
 
@@ -114,7 +117,31 @@ int parse_request(struct wen_request *request)
 		{
 			wen_free(request);
 		}
+
+		int res_body = parse_http_request_body(request);
+
+		if(res_body == AGAIN)
+			continue;
+		else if(res_body != OK)
+		{
+			wen_free(request);
+		}
+		
+		/*handle http request*/
+		char  filename[1024];
+		parse_http_uri(request,filename);
+		if(stat(filename,&sbuf) < 0){
+			bad_request(request);
+			return 0;
+		}
+
+		http_response(request,filename);
+
+                wen_free(request);
+		break;
 	}
+
+	return 1;
 }	
 
 int parse_http_request_line(struct wen_request* request)
@@ -122,4 +149,7 @@ int parse_http_request_line(struct wen_request* request)
 	
 }
 
+int parse_http_request_body(struct wen_request* request)
+{
 
+}

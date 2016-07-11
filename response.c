@@ -10,14 +10,14 @@ static void parse_http_uri(char*,char*);
 static void io_write(char*,int);
 static void http_header(int,int);
 
-int http_response(struct wen_request* request)
+int http_response(struct wen_request* request,char* filename)
 {
 	// first check the request url
-	char filename[100];
-
-	parse_http_uri(request->wen_url,filename);
-	
-	io_write(filename,request->wen_fd);
+//	char filename[100];
+//
+//	parse_http_uri(request->wen_url,filename);
+//	
+//	io_write(filename,request->wen_fd);
 	
 
 //	exit(1);
